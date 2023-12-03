@@ -36,8 +36,6 @@ export function day03p1(filename: string) {
             }
             returnCoords = [
               ...returnCoords.concat([
-                // [xIndex + length - 1, yIndex - 1],
-                // [xIndex + length - 1, yIndex + 1],
                 [xIndex + length, yIndex - 1],
                 [xIndex + length, yIndex],
                 [xIndex + length, yIndex + 1],

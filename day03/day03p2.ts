@@ -1,41 +1,79 @@
 import * as fs from "node:fs";
 
-export function day02p2(filename: string) {
-  /* Part 2 */
-  return fs
-    .readFileSync(filename)
-    .toString()
-    .split("\n")
-    .map((line) => {
-      const [_, gameId, gameFlow]: any = line.match(/Game (\d+): (.*?)$/i);
-      return gameFlow.split(";").map((gameStep: any) => {
-        return [...gameStep.matchAll(/((\d+) (red|blue|green))/g)].map(
-          ([_, _1, blockCount, blockColor]) => {
-            return { count: parseInt(blockCount), color: blockColor };
+export function day03p2(filename: string) {
+  /* Part 1 */
+  const fileStringArray = fs.readFileSync(filename).toString().split("\n");
+  const fileCoords = fileStringArray.map((line) => line.split(""));
+  const height = fileStringArray.length;
+  const width = fileStringArray[0].length; // rectangle grid
+  const gearMap = fileStringArray
+    .map((line, index) => {
+      return [...line.matchAll(/\d+/g)].map((match) => {
+        return ((xIndex = 0, yIndex: number, length: number) => {
+          let returnCoords: number[][] = [
+            [xIndex - 1, yIndex - 1],
+            [xIndex - 1, yIndex],
+            [xIndex - 1, yIndex + 1],
+            [xIndex, yIndex - 1],
+            [xIndex, yIndex + 1],
+          ];
+          if (length === 1) {
+            returnCoords = [
+              ...returnCoords.concat([
+                [xIndex + 1, yIndex - 1],
+                [xIndex + 1, yIndex],
+                [xIndex + 1, yIndex + 1],
+              ]),
+            ];
+          } else {
+            for (let i = 1; i < length; i++) {
+              returnCoords = [
+                ...returnCoords.concat([
+                  [xIndex + i, yIndex - 1],
+                  [xIndex + i, yIndex + 1],
+                ]),
+              ];
+            }
+            returnCoords = [
+              ...returnCoords.concat([
+                [xIndex + length, yIndex - 1],
+                [xIndex + length, yIndex],
+                [xIndex + length, yIndex + 1],
+              ]),
+            ];
           }
-        );
+          returnCoords = returnCoords.filter(
+            ([x, y]) => x >= 0 && y >= 0 && x < width && y < height
+          );
+
+          return returnCoords
+            .map(([x, y]) => ({
+              number: match[0],
+              char: fileCoords[y][x],
+              x,
+              y,
+            }))
+            .filter(({ char }) => char === "*");
+        })(match.index, index, match[0].length); //iife
       });
     })
-    .map((game) => {
-      // console.log(game);
-      debugger;
-      let minBlocks: any = { red: 0, blue: 0, green: 0 };
-      game.map((round: any) => {
-        // console.log(round);
-        round.forEach(({ count, color }: any) => {
-          if (minBlocks[color] < count) {
-            minBlocks[color] = count;
-          }
-        });
-      });
-      // console.log(minBlocks);
-      return minBlocks;
-    })
-    .map((minBlock: any) =>
-      Object.values(minBlock).reduce((acc: any, item: any) => acc * item, 1)
-    )
-    .reduce((acc: any, item: any) => acc + item, 0);
+    .flat()
+    .filter((x) => x.length > 0) // remove lines without a number
+    .flat()
+    .reduce((acc, item) => {
+      const key = `${item.x}_${item.y}`;
+      return {
+        ...acc,
+        [key]: acc[key] ? [...acc[key], item] : [item],
+      };
+    }, {});
+  return Object.entries(gearMap)
+    .filter(([key, value]: [string, any]) => value.length === 2)
+    .reduce((acc, [key, [gear1, gear2]]: any) => {
+      console.log(key, gear1, gear2);
+      return acc + parseInt(gear1.number) * parseInt(gear2.number);
+    }, 0);
 }
 
-console.log(day02p2("./day02/example.txt"));
-console.log(day02p2("./day02/raw-data.txt"));
+console.log(day03p2("./day03/example.txt"));
+console.log(day03p2("./day03/raw-data.txt"));
