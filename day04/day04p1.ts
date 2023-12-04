@@ -9,14 +9,6 @@ export function day04p1(filename: string) {
     .map((line) =>
       [...line.matchAll(/Card\s+(\d+):\s+(\d.*)\s+\|\s+(\d.*)$/g)].map(
         ([_, card, winners, pick]) => {
-          console.log(card, winners, pick);
-          console.log(winners.split(/\s+/));
-          console.log(pick.split(/\s+/));
-          console.log(
-            winners.split(/\s+/).filter((winner) => {
-              return pick.split(/\s+/).includes(winner);
-            })
-          );
           const winnerCount = winners.split(/\s+/).filter((winner) => {
             return pick.split(/\s+/).includes(winner);
           }).length;
