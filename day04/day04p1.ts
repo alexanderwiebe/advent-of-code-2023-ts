@@ -19,6 +19,6 @@ export function day04p1(filename: string) {
     .flat()
     .reduce((a, b) => a + b, 0);
 }
-console.log(Math.pow(2, 0));
+
 console.log(day04p1("./day04/example.txt"));
 console.log(day04p1("./day04/raw-data.txt"));
