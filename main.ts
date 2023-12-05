@@ -1,5 +1,4 @@
 // just a runner of the days specific code
-import { day04p2 } from "./day04/day04p2";
+import { day05p1 } from "./day05/day05p1";
 
-console.log(day04p2("./day04/example.txt"));
-// console.log(day04p2("./day04/raw-data.txt"));
+console.log(day05p1("./day05/example.txt"));

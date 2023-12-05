@@ -15,7 +15,6 @@ export function day04p2(filename: string) {
           }).length;
           for (let j = 0; j < cardCopies[cardIndex]; j++) {
             for (let i = cardIndex + 1; i <= cardIndex + winnerCount; i++) {
-              // console.log(card, cardCopies);
               cardCopies[i] += 1;
             }
           }
@@ -25,5 +24,5 @@ export function day04p2(filename: string) {
   return cardCopies.slice(1).reduce((acc, item) => acc + item, 0); // remove 0th item
 }
 
-// console.log(day04p2("./day04/example.txt"));
-console.log(day04p2("./day04/raw-data.txt"));
+console.log(day04p2("./day04/example.txt")); // needs the Array.from to be 7 (cards + 1)
+console.log(day04p2("./day04/raw-data.txt")); // needs the Array.from to be 224 (cards + 1)
