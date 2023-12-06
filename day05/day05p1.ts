@@ -35,9 +35,10 @@ export function day05p1(filename: string) {
           if (line === "") {
             const retVal = {
               ...acc,
-              [SECTIONS[sectionIndex]]: acc[SECTIONS[sectionIndex]].sort(
-                (a, b) => a[1] - b[1]
-              ),
+              [SECTIONS[sectionIndex]]: acc[SECTIONS[sectionIndex]],
+              // .sort(
+              //   (a, b) => a[1] - b[1]
+              // ),
             };
             sectionIndex++;
             return retVal;
@@ -67,117 +68,73 @@ export function day05p1(filename: string) {
         "humidity-to-location": [],
       }
     );
+  console.log(formattedLines);
+  // as usual this only messed things up
+  // // add a zero mapper to the start
+  // MAPPERS.forEach((section) => {
+  //   if (formattedLines[section][0][1] !== 0) {
+  //     formattedLines[section].splice(0, 0, [
+  //       0,
+  //       0,
+  //       formattedLines[section][0][1],
+  //     ]);
+  //   }
+  // });
 
-  // add a zero mapper to the start
-  MAPPERS.forEach((section) => {
-    if (formattedLines[section][0][1] !== 0) {
-      formattedLines[section].splice(0, 0, [
-        0,
-        0,
-        formattedLines[section][0][1],
-      ]);
-    }
-  });
+  // // to infinity and beyond
+  // MAPPERS.forEach((section) => {
+  //   const length = formattedLines[section].length;
+  //   formattedLines[section].push([
+  //     formattedLines[section][length - 1][1] +
+  //       formattedLines[section][length - 1][2],
+  //     formattedLines[section][length - 1][1] +
+  //       formattedLines[section][length - 1][2],
+  //     Infinity,
+  //   ]);
+  // });
 
-  // to infinity and beyond
-  MAPPERS.forEach((section) => {
-    const length = formattedLines[section].length;
-    console.log(formattedLines[section][length - 1][1]);
-    formattedLines[section].push([
-      formattedLines[section][length - 1][1] +
-        formattedLines[section][length - 1][2],
-      formattedLines[section][length - 1][1] +
-        formattedLines[section][length - 1][2],
-      Infinity,
-    ]);
-  });
+  // MAPPERS.forEach((section) => {
+  //   console.log(formattedLines[section]);
+  //   formattedLines[section] = formattedLines[section].map(
+  //     ([dest, source, inc], index, array) => {
+  //       console.log(dest, source, inc, array[index + 1]);
+  //       if (index < array.length - 1) {
+  //         return [dest, source, inc, array[index + 1][1]];
+  //       } else {
+  //         return [dest, source, inc, Infinity];
+  //       }
+  //     }
+  //   );
+  // });
 
   console.log(formattedLines);
-
-  MAPPERS.forEach((section) => {
-    formattedLines[section] = formattedLines[section].map(
-      ([dest, source, inc]) => {
-        return (input) =>
-          input >= source && input < source + inc ? input - source + dest : -1;
-      }
-    );
-  });
-
-  /* testing array to function */
-  let testVal = [[54, 54, Infinity]].map(([dest, source, inc]) => {
-    return (input) =>
-      input >= source && input < source + inc ? input - source + dest : -1;
-  })[0](81);
-  console.log(testVal);
-
   const seeds = formattedLines.seeds;
-  const locations = seeds.map((seed) => {
-    console.log("seed", seed);
-    let nextValue = formattedLines["seed-to-soil"]
-      .map((func: any) => func(seed))
-      .find((x) => x !== -1);
-    console.log("soil", nextValue);
-    nextValue = formattedLines["soil-to-fertilizer"]
-      .map((func: any) => func(nextValue))
-      .find((x) => x !== -1);
-    console.log("fertilizer", nextValue);
-    nextValue = formattedLines["fertilizer-to-water"]
-      .map((func: any) => func(nextValue))
-      .find((x) => x !== -1);
-    console.log("water", nextValue);
-    nextValue = formattedLines["water-to-light"]
-      .map((func: any) => func(nextValue))
-      .find((x) => x !== -1);
-    console.log("light", nextValue);
-    nextValue = formattedLines["light-to-temperature"]
-      .map((func: any) => func(nextValue))
-      .find((x) => x !== -1);
-    console.log("temp", nextValue);
-    nextValue = formattedLines["temperature-to-humidity"]
-      .map((func: any) => func(nextValue))
-      .find((x) => x !== -1);
-    console.log("humidity", nextValue);
-    nextValue = formattedLines["humidity-to-location"]
-      .map((func: any) => func(nextValue))
-      .find((x) => x !== -1);
-    console.log("location", nextValue);
-    return nextValue;
+
+  let locations = seeds.map((seed: any) => {
+    MAPPERS.forEach((section) => {
+      let listTransforms = formattedLines[section].filter(
+        ([_, source, inc]) => {
+          if (seed >= source && seed < source + inc) {
+            return true;
+          } else {
+            return false;
+          }
+        }
+      );
+      if (listTransforms.length > 1) {
+        console.error("more than 1 transform found");
+      }
+      if (listTransforms.length === 0) {
+        // console.error("no transform found"); // now expected behaviour
+      } else {
+        let [dest, source] = listTransforms[0];
+        seed = seed - source + dest;
+      }
+    });
+    return seed;
   });
-  console.log(seeds);
-  console.log(locations);
-
-  // iteration 1
-  console.log((formattedLines["seed-to-soil"][0] as any)(seeds[0]));
-  console.log((formattedLines["seed-to-soil"][1] as any)(seeds[0]));
-  console.log((formattedLines["seed-to-soil"][2] as any)(seeds[0]));
-  console.log((formattedLines["seed-to-soil"][0] as any)(seeds[1]));
-  console.log((formattedLines["seed-to-soil"][1] as any)(seeds[1]));
-  console.log((formattedLines["seed-to-soil"][2] as any)(seeds[1]));
-  console.log((formattedLines["seed-to-soil"][0] as any)(seeds[2]));
-  console.log((formattedLines["seed-to-soil"][1] as any)(seeds[2]));
-  console.log((formattedLines["seed-to-soil"][2] as any)(seeds[2]));
-  console.log((formattedLines["seed-to-soil"][0] as any)(seeds[3]));
-  console.log((formattedLines["seed-to-soil"][1] as any)(seeds[3]));
-  console.log((formattedLines["seed-to-soil"][2] as any)(seeds[3]));
-
-  // iteration 2
-  console.log((formattedLines["soil-to-fertilizer"][0] as any)(seeds[0]));
-  return formattedLines;
+  return Math.min(...locations); // .sort((a, b) => a - b)// [0];
 }
 
-/**
- *     if(index === 0 && source !== 0) {
-        return [
-            (input) => ((input < source) ? (input) : -1 ),
-            (input) => ((input > source) ? (input - source + dest) : -1 )
-            ];
-    }
- */
-
-/* convers 
-    let func = [ [ 52, 50, 48 ], [ 50, 98, 2 ] ].map(([dest, source, inc], index) => {
-    return (input) => ((input > source) ? (input - source + dest) : -1 ); 
-}) */
-
 console.log(day05p1("./day05/example.txt"));
-// console.log(day05p1("./day05/raw-data.txt"));
+console.log(day05p1("./day05/raw-data.txt"));
