@@ -1,6 +1,6 @@
 import * as fs from "node:fs";
 
-export function day06p2(filename: string) {
+export function day06p1(filename: string) {
   /* Part 1 */
 
   const formattedLines = fs
@@ -26,5 +26,5 @@ export function day06p2(filename: string) {
   return waysToWin.reduce((acc, race) => acc * race);
 }
 
-console.log(day06p2("./day06/example.txt"));
-console.log(day06p2("./day06/raw-data.txt"));
+console.log(day06p1("./day06/example.txt"));
+console.log(day06p1("./day06/raw-data.txt"));

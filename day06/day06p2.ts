@@ -1,117 +1,33 @@
 import * as fs from "node:fs";
 
-export function day05p2(filename: string) {
+export function day06p2(filename: string) {
   /* Part 1 */
-  const MAPPERS = [
-    "seed-to-soil",
-    "soil-to-fertilizer",
-    "fertilizer-to-water",
-    "water-to-light",
-    "light-to-temperature",
-    "temperature-to-humidity",
-    "humidity-to-location",
-  ];
-  const SECTIONS = ["seeds", ...MAPPERS];
-
-  let sectionIndex = -1;
 
   const formattedLines = fs
     .readFileSync(filename)
     .toString()
     .split("\n")
-    .reduce(
-      (acc, line) => {
-        if (sectionIndex === -1) {
-          // seeds
-          sectionIndex++;
-          return {
-            ...acc,
-            [SECTIONS[sectionIndex]]: line
-              .split(/\s+/)
-              .slice(1)
-              .map((x) => parseInt(x)),
-          };
-        } else {
-          if (line === "") {
-            const retVal = {
-              ...acc,
-              [SECTIONS[sectionIndex]]: acc[SECTIONS[sectionIndex]],
-              // .sort(
-              //   (a, b) => a[1] - b[1]
-              // ),
-            };
-            sectionIndex++;
-            return retVal;
-          } else {
-            if (line.includes(":")) {
-              return acc; // skip the section header
-            }
-            return {
-              ...acc,
-              [SECTIONS[sectionIndex]]: [
-                ...acc[SECTIONS[sectionIndex]],
-                line.split(/\s+/).map((x) => parseInt(x)),
-              ],
-            };
-          }
-          return acc;
-        }
-      },
-      {
-        seeds: [],
-        "seed-to-soil": [],
-        "soil-to-fertilizer": [],
-        "fertilizer-to-water": [],
-        "water-to-light": [],
-        "light-to-temperature": [],
-        "temperature-to-humidity": [],
-        "humidity-to-location": [],
-      }
-    );
+    .map((line) => +line.split(":")[1].replace(/\s+/g, ""));
 
-  // console.log(formattedLines);
-  const seeds = formattedLines.seeds;
+  console.log(formattedLines);
 
-  let seedRange: any = [];
-  for (let i = 0; i < formattedLines.seeds.length; i += 2) {
-    seedRange.push([seeds[i], seeds[i + 1]]);
-  }
-  // console.log(seedRange);
+  let waysToWin: number[] = [];
 
-  let locationRange = seedRange.map(([start, inc]: any) => {
-    let locationRange: any = [];
-    // do stuff
-    for (let seedR = start; seedR < start + inc; seedR++) {
-      let seedMutate = seedR;
-      MAPPERS.forEach((section) => {
-        let listTransforms = formattedLines[section].filter(
-          ([_, source, inc]) => {
-            if (seedMutate >= source && seedMutate < source + inc) {
-              return true;
-            } else {
-              return false;
-            }
-          }
-        );
-        if (listTransforms.length > 1) {
-          console.error("more than 1 transform found");
-        }
-        if (listTransforms.length === 0) {
-          // console.error("no transform found"); // now expected behaviour
-        } else {
-          let [dest, source] = listTransforms[0];
-          seedMutate = seedMutate - source + dest;
-        }
-      });
-      locationRange.push(seedMutate);
+  let time = +formattedLines[0];
+  let distance = +formattedLines[1];
+  console.log(time, distance);
+  let permutations: number[] = [];
+  for (let pushDuration = 1; pushDuration < time; pushDuration++) {
+    const moveDuration = time - pushDuration;
+    if (moveDuration * pushDuration > distance) {
+      permutations.push(pushDuration);
     }
-    return locationRange;
-  });
-  // console.log(locationRange);
-  // console.log(Math.min(...locationRange.flat()));
+  }
+  console.log(permutations);
+  waysToWin.push(permutations.length);
 
-  return Math.min(...locationRange.flat());
+  return waysToWin.reduce((acc, race) => acc * race);
 }
 
-// console.log(day05p2("./day05/example.txt"));
-console.log(day05p2("./day05/raw-data.txt"));
+console.log(day06p2("./day06/example.txt"));
+console.log(day06p2("./day06/raw-data.txt"));
