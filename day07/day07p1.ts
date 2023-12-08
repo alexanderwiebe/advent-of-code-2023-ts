@@ -33,7 +33,7 @@ export function day07p1(filename: string) {
       numericHandSorted: hand
         .split("")
         .map((x) => "-123456789TJQKA".indexOf(x))
-        .sort((a, b) => b - a),
+        .sort((a, b) => a - b),
     }))
     .map((handObj) => ({
       ...handObj,
