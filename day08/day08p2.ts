@@ -1,185 +1,98 @@
 import * as fs from "node:fs";
 
-export function day07p2(filename: string) {
-  /* Part 1 */
-  enum CARD_TYPES {
-    "5Kind", // 0
-    "4Kind", // 1
-    "FullHouse", // 2
-    "3Kind", // 3
-    "2Pair", // 4
-    "1Pair", // 5
-    "HighCard", // 6
-  }
-  const CARD_LOOKUP = [
-    "5Kind", // 0
-    "4Kind", // 1
-    "FullHouse", // 2
-    "3Kind", // 3
-    "2Pair", // 4
-    "1Pair", // 5
-    "HighCard", // 6
-  ];
+export function day08p2(filename: string) {
+  /* Part 2 */
 
-  return fs
+  let formattedData = fs
     .readFileSync(filename)
     .toString()
     .split("\n")
-    .map((line) => line.split(/\s+/))
-    .map(([hand, bidAmount]) => ({
-      hand,
-      bidAmount: +bidAmount,
-      numericHand: hand.split("").map((x) => "-J123456789TQKA".indexOf(x)),
-      numericHandSorted: hand
-        .split("")
-        .map((x) => "-J123456789TQKA".indexOf(x))
-        .sort((a, b) => a - b),
-    }))
-    .map((handObj) => ({
-      ...handObj,
-      cardType: ((inputHand) => {
-        console.log(inputHand);
-        // 5 of a kind
-        if (
-          inputHand[0] === inputHand[1] &&
-          inputHand[1] === inputHand[2] &&
-          inputHand[2] === inputHand[3] &&
-          inputHand[3] === inputHand[4]
-        ) {
-          return CARD_TYPES["5Kind"];
+    .reduce(
+      (acc: any, line: string, index: number) => {
+        if (index === 0) {
+          return {
+            ...acc,
+            steps: line.split("").map((x) => (x === "L" ? 0 : 1)),
+          };
         }
+        if (index === 1) {
+          return acc;
+        }
+        return {
+          ...acc,
+          instructions: {
+            ...acc.instructions,
+            ...Object.fromEntries(
+              [...line.matchAll(/(\w+)\s=\s\((\w+),\s(\w+)/g)].map(
+                ([_, key, left, right]) => {
+                  // console.log(key, left, right);
+                  return [key, [left, right]];
+                }
+              )
+            ),
+          },
+        };
+      },
+      { steps: [], instructions: {} }
+    );
 
-        // 4 of a kind
-        if (
-          inputHand[0] === inputHand[1] &&
-          inputHand[1] === inputHand[2] &&
-          inputHand[2] === inputHand[3]
-        ) {
-          if (inputHand[0] === 1) {
-            return CARD_TYPES["5Kind"]; // WILD CARD
-          }
-          return CARD_TYPES["4Kind"];
-        }
-        if (
-          inputHand[1] === inputHand[2] &&
-          inputHand[2] === inputHand[3] &&
-          inputHand[3] === inputHand[4]
-        ) {
-          if (inputHand[0] === 1) {
-            return CARD_TYPES["5Kind"]; // WILD CARD
-          }
-          return CARD_TYPES["4Kind"];
-        }
+  // console.log(formattedData);
 
-        // Full House
-        if (
-          inputHand[0] === inputHand[1] &&
-          inputHand[1] === inputHand[2] &&
-          inputHand[3] === inputHand[4]
-        ) {
-          if (inputHand[0] === 1) {
-            return CARD_TYPES["5Kind"]; // WILD CARD
-          }
-          return CARD_TYPES["FullHouse"];
-        }
-        if (
-          inputHand[0] === inputHand[1] &&
-          inputHand[2] === inputHand[3] &&
-          inputHand[3] === inputHand[4]
-        ) {
-          if (inputHand[0] === 1) {
-            return CARD_TYPES["5Kind"]; // WILD CARD
-          }
-          return CARD_TYPES["FullHouse"];
-        }
-
-        // 3 of a kind
-        if (inputHand[0] === inputHand[1] && inputHand[1] === inputHand[2]) {
-          if (inputHand[0] === 1 || inputHand[3] === 1 || inputHand[4] === 1) {
-            return CARD_TYPES["4Kind"]; // WILD CARD
-          }
-          return CARD_TYPES["3Kind"];
-        }
-        if (inputHand[1] === inputHand[2] && inputHand[2] === inputHand[3]) {
-          if (inputHand[0] === 1) {
-            return CARD_TYPES["4Kind"]; // WILD CARD
-          }
-          return CARD_TYPES["3Kind"];
-        }
-        if (inputHand[2] === inputHand[3] && inputHand[3] === inputHand[4]) {
-          if (inputHand[0] === 1) {
-            return CARD_TYPES["4Kind"]; // WILD CARD
-          }
-          return CARD_TYPES["3Kind"];
-        }
-
-        // 2 pair
-        if (inputHand[0] === inputHand[1] && inputHand[2] === inputHand[3]) {
-          if (inputHand[0] === 1) {
-            return CARD_TYPES["4Kind"]; // WILD CARD
-          }
-          return CARD_TYPES["2Pair"];
-        }
-        if (inputHand[0] === inputHand[1] && inputHand[3] === inputHand[4]) {
-          if (inputHand[0] === 1) {
-            return CARD_TYPES["4Kind"]; // WILD CARD
-          }
-          return CARD_TYPES["2Pair"];
-        }
-        if (inputHand[1] === inputHand[2] && inputHand[3] === inputHand[4]) {
-          if (inputHand[0] === 1) {
-            return CARD_TYPES["FullHouse"]; // WILD CARD
-          }
-          return CARD_TYPES["2Pair"];
-        }
-
-        // 1 pair
-        if (inputHand[0] === inputHand[1]) {
-          if (inputHand[0] === 1) {
-            return CARD_TYPES["3Kind"];
-          }
-          return CARD_TYPES["1Pair"];
-        }
-        if (inputHand[1] === inputHand[2]) {
-          if (inputHand[0] === 1) {
-            return CARD_TYPES["3Kind"];
-          }
-          return CARD_TYPES["1Pair"];
-        }
-        if (inputHand[2] === inputHand[3]) {
-          if (inputHand[0] === 1) {
-            return CARD_TYPES["3Kind"];
-          }
-          return CARD_TYPES["1Pair"];
-        }
-        if (inputHand[3] === inputHand[4]) {
-          if (inputHand[0] === 1) {
-            return CARD_TYPES["3Kind"];
-          }
-          return CARD_TYPES["1Pair"];
-        }
-
-        // high card
-        if (inputHand[0] === 1) {
-          return CARD_TYPES["1Pair"];
-        }
-        return CARD_TYPES["HighCard"];
-      })(handObj.numericHandSorted),
-    }))
-    .sort((b, a) => {
-      if (a.cardType !== b.cardType) {
-        return a.cardType - b.cardType;
-      } else {
-        for (let i = 0; i < a.numericHand.length; i++) {
-          if (a.numericHand[i] !== b.numericHand[i]) {
-            return b.numericHand[i] - a.numericHand[i];
-          }
-        }
+  let currentNodes = Object.keys(formattedData.instructions).filter((node) =>
+    node.endsWith("A")
+  );
+  let step = 0;
+  let totalSteps = 0;
+  const maxStep = formattedData.steps.length;
+  // console.log(maxStep);
+  // for(let i = 0; i < 10; i++) {
+  let iterations = currentNodes.map((node) => {
+    let currentNode = node;
+    let step = 0;
+    let totalSteps = 0;
+    const maxStep = formattedData.steps.length;
+    while (!currentNode.endsWith("Z")) {
+      if (step === maxStep) {
+        step = 0;
       }
-      return 0;
-    })
-    .reduce((acc, handObj, index) => acc + handObj.bidAmount * (index + 1), 0);
+      // console.log(formattedData.instructions[currentNode]);
+      // console.log(formattedData.steps[step]);
+      // console.log(step);
+      currentNode =
+        formattedData.instructions[currentNode][formattedData.steps[step]];
+      step++;
+      totalSteps++;
+    }
+    return totalSteps;
+  });
+  console.log("totalsteps", iterations);
+
+  // COPIED FROM STACKOVERFLOW
+  function gcd2(a, b) {
+    // Greatest common divisor of 2 integers
+    if (!b) return b === 0 ? a : NaN;
+    return gcd2(b, a % b);
+  }
+  function gcd(array) {
+    // Greatest common divisor of a list of integers
+    var n = 0;
+    for (var i = 0; i < array.length; ++i) n = gcd2(array[i], n);
+    return n;
+  }
+  function lcm2(a, b) {
+    // Least common multiple of 2 integers
+    return (a * b) / gcd2(a, b);
+  }
+  function lcm(array) {
+    // Least common multiple of a list of integers
+    var n = 1;
+    for (var i = 0; i < array.length; ++i) n = lcm2(array[i], n);
+    return n;
+  }
+  // COPIED FROM STACKOVERFLOW
+  console.log("lcm", lcm(iterations));
+  return lcm(iterations);
 }
 
-console.log(day07p2("./day07/example.txt"));
-console.log(day07p2("./day07/raw-data.txt"));
+// console.log(day08p2("./day08/example-3.txt"));
+console.log(day08p2("./day08/raw-data.txt"));
