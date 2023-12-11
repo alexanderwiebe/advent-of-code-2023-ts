@@ -7,6 +7,7 @@ type Node = {
   travel: boolean;
   distanceAway: number;
   direction?: "UP" | "DOWN";
+  boundary?: boolean;
 };
 
 export function surrounding(
@@ -103,9 +104,10 @@ export function travelNodes(
       currentNode.value === "|")
   ) {
     if (north.value === "|") {
-      travelNodes.push({ ...north, direction: "UP" });
+      travelNodes.push({ ...north, direction: "UP", boundary: true });
     } else {
-      travelNodes.push({ ...north });
+      // travelNodes.push({ ...north, boundary: true });
+      travelNodes.push(north);
     }
   }
   if (
@@ -115,6 +117,9 @@ export function travelNodes(
       currentNode.value === "J" ||
       currentNode.value === "-")
   ) {
+    if (/*east.value === "F" ||*/ east.value === "L") {
+      travelNodes.push({ ...east, boundary: true });
+    }
     travelNodes.push(east);
   }
   if (
@@ -124,6 +129,9 @@ export function travelNodes(
       currentNode.value === "L" ||
       currentNode.value === "-")
   ) {
+    if (/*west.value === "7" ||*/ west.value === "J") {
+      travelNodes.push({ ...west, boundary: true });
+    }
     travelNodes.push(west);
   }
   if (
@@ -134,9 +142,9 @@ export function travelNodes(
       currentNode.value === "|")
   ) {
     if (south.value === "|") {
-      travelNodes.push({ ...south, direction: "DOWN" });
+      travelNodes.push({ ...south, direction: "DOWN", boundary: true });
     } else {
-      travelNodes.push({ ...south });
+      travelNodes.push({ ...south, boundary: true });
     }
   }
   const travelingToNode = travelNodes.filter(({ travel }) => !travel)[0];
@@ -148,6 +156,9 @@ export function travelNodes(
   if (travelingToNode.direction) {
     puzzleGrid[travelingToNode.row][travelingToNode.col].direction =
       travelingToNode.direction;
+  }
+  if (travelingToNode.boundary) {
+    puzzleGrid[travelingToNode.row][travelingToNode.col].boundary = true;
   }
   return travelingToNode; // don't go to the same node twice
 }
@@ -237,67 +248,140 @@ export function day10p2(filename: string) {
   for (let row = 0; row < puzzleGrid.length; row++) {
     for (let col = 0; col < puzzleGrid[row].length; col++) {
       if (puzzleGrid[row][col].value === "S") {
-        start = { value: "S", row, col, travel: true, distanceAway: 0 };
+        puzzleGrid[row][col].travel = true;
+        puzzleGrid[row][col].boundary = true; // COMMENT THIS OUT IFF S = -,F,7 through inspection
+        start = {
+          value: "S",
+          row,
+          col,
+          travel: true,
+          distanceAway: 0,
+          boundary: true,
+        };
       }
     }
   }
 
   let next = moveNext(start, puzzleGrid);
-  console.log(next);
+  // console.log(next);
   let previous;
 
   while (next.value !== "S") {
     previous = next;
     next = moveNext(next, puzzleGrid);
-    console.log(previous);
-    console.log(next);
+    // console.log(previous);
+    // console.log(next);
   }
 
-  console.log(
-    puzzleGrid.map((row) =>
-      row.map(({ direction }) =>
-        direction ? (direction === "UP" ? "↑" : "↓") : " "
-      )
-    )
-  );
+  // console.log(
+  //   puzzleGrid.map((row) =>
+  //     row.map(({ direction }) =>
+  //       direction ? (direction === "UP" ? "↑" : "↓") : " "
+  //     )
+  //   )
+  // );
 
-  console.log(puzzleGrid.map((row) => row.map(({ travel }) => travel)));
+  // console.log(
+  //   puzzleGrid.map((row) =>
+  //     row.map(({ travel, boundary }) => (boundary ? "X" : " "))
+  //   )
+  // );
 
   let areaNode = 0;
+  let lastAreaCount = 0;
   console.log(
-    puzzleGrid.map((row) => {
-      let inLoop = false;
-      let previousAdded = false;
-      let boundingPipes = row
-        .filter(({ value, travel }) => value === "|" && travel)
-        .map(({ col }) => col);
-      return row.map((node, column, array) => {
-        let retVal = node.value;
-        if (
-          !node.travel &&
-          inLoop &&
-          column < boundingPipes[boundingPipes.length - 1] &&
-          (!array[column + 1].travel || previousAdded)
-        ) {
-          areaNode++;
-          previousAdded = true;
-          retVal = "X";
-        }
-        if (!!node?.direction) {
-          inLoop = !inLoop;
-        }
-        return retVal;
-      });
+    puzzleGrid.map((row, rowIndex) => {
+      const newLocal = row
+        .map((node, rowIndex) => {
+          if (!node.travel) {
+            if (
+              row.slice(rowIndex + 1).filter(({ boundary }) => boundary)
+                .length %
+                2 ===
+              1
+            ) {
+              areaNode++;
+              return "X";
+            }
+          }
+          return node.value;
+        })
+        .join("");
+      console.log("row:\t", rowIndex, "\tcount:\t", areaNode - lastAreaCount);
+      lastAreaCount = areaNode;
+      return newLocal;
     })
   );
+  //#region broken solutions
+  // console.log(
+  //   puzzleGrid.map((row) => {
+  //     let inLoop = false;
+  //     let previousAdded = false;
+  //     let boundingPipes = row
+  //       .filter(({ travel }) => travel)
+  //       .map(({ col }) => col);
+  //     let pipePairs: any = [];
+  //     for (let i = 1; i < row.length; i++) {
+  //       if (row[i - 1].travel !== row[i]?.travel) {
+  //         // inflection point
+  //         console.log(row[i].row, ", ", row[i].col);
+  //         pipePairs.push(row[i].col);
+  //       }
+  //     }
+
+  //     console.log(pipePairs);
+  //     return row.map((node, column, array) => {
+  //       let retVal = node.value;
+  //       let inflextionIndex = 0;
+  //       let inLoop = false;
+  //       if (pipePairs.length > 0) {
+  //         if (column === pipePairs[inflextionIndex]) {
+  //           inLoop = !inLoop;
+  //           inflextionIndex++;
+  //         }
+  //         if (inLoop && !node.travel) {
+  //           retVal = "X";
+  //         }
+  //       } else {
+  //         retVal = node.value;
+  //       }
+
+  //       return retVal;
+
+  //       // let previousNode = array?.[column - 1];
+  //       // if (!node.travel && (previousNode?.travel || inLoop)) {
+  //       //   areaNode++;
+  //       //   retVal = "X";
+  //       // } else {
+  //       //   inLoop = false;
+  //       // }
+  //       // if (
+  //       //   !node.travel &&
+  //       //   inLoop &&
+  //       //   column < boundingPipes[boundingPipes.length - 1] &&
+  //       //   (!array[column + 1].travel || previousAdded)
+  //       // ) {
+  //       //   areaNode++;
+  //       //   previousAdded = true;
+  //       //   retVal = "X";
+  //       // } else {
+  //       //   previousAdded = false;
+  //       // }
+  //       // if (!!node?.direction) {
+  //       //   inLoop = !inLoop;
+  //       // }
+  //     });
+  //   })
+  // );
+  //#endregion
   return areaNode;
 }
 
 // console.log(day10p2("./day10/example.txt"));
-console.log(day10p2("./day10/example1.txt"));
+// console.log(day10p2("./day10/example1.txt"));
 // console.log(day10p2("./day10/example2.txt"));
 // console.log(day10p2("./day10/example3.txt"));
 // console.log(day10p2("./day10/example4.txt"));
 // console.log(day10p2("./day10/example5.txt"));
 // console.log(day10p2("./day10/example6.txt"));
-// console.log(day10p2("./day10/raw-data.txt"));
+console.log(day10p2("./day10/raw-data.txt"));
